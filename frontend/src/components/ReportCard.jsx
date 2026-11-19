@@ -27,8 +27,15 @@ export default function ReportCard({
             </div>
           </div>
 
-          <div className="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold">
-            {stats ? stats.count : 0} {stats?.count === 1 ? 'Reading' : 'Readings'}
+          <div className="flex items-center space-x-2">
+            {stats?.fromCache && (
+              <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-[10px] font-bold" title="Result fetched from Redis cache">
+                ⚡ Redis
+              </span>
+            )}
+            <div className="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold">
+              {stats ? stats.count : 0} {stats?.count === 1 ? 'Reading' : 'Readings'}
+            </div>
           </div>
         </div>
 

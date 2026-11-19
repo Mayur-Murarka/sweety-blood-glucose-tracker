@@ -38,8 +38,8 @@ export function AuthProvider({ children }) {
     return res.user;
   };
 
-  const register = async (name, email, password) => {
-    const res = await authApi.register({ name, email, password });
+  const register = async (name, email, password, role = 'patient') => {
+    const res = await authApi.register({ name, email, password, role });
     setToken(res.token);
     setUser(res.user);
     localStorage.setItem('sweety_token', res.token);

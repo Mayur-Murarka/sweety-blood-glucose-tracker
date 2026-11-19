@@ -29,6 +29,7 @@ describe('Authentication API (/api/auth)', () => {
         id: expect.any(Number),
         name: 'Jane Doe',
         email: 'jane@example.com',
+        role: 'patient',
       });
 
       // Verify password in DB is hashed and never stored plain text

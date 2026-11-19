@@ -87,3 +87,22 @@ export const reportApi = {
     return apiRequest(`/reports${query}`);
   },
 };
+
+export const doctorApi = {
+  getAssignedPatients: () => apiRequest('/doctor/patients'),
+  getPatientReports: (patientId, date) => {
+    const query = date ? `?date=${encodeURIComponent(date)}` : '';
+    return apiRequest(`/doctor/patients/${patientId}/reports${query}`);
+  },
+  assignPatient: (email) => apiRequest('/doctor/assign', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }),
+};
+
+export const reminderApi = {
+  triggerReminders: (date) => apiRequest('/reminders/trigger', {
+    method: 'POST',
+    body: JSON.stringify({ date }),
+  }),
+};

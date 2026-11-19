@@ -5,27 +5,59 @@ async function seedDatabase() {
   console.log('[Seed] Initializing database connection...');
   await initDb();
 
-  // 1. Upsert Demo User
-  const demoEmail = 'demo@kenpath.com';
-  const demoName = 'Demo Patient';
   const demoPassword = 'Password123!';
   const passwordHash = await bcrypt.hash(demoPassword, 10);
+
+  // 1. Upsert Demo Patient User
+  const demoEmail = 'demo@kenpath.com';
+  const demoName = 'Demo Patient';
 
   let userRes = await query('SELECT id FROM users WHERE email = $1', [demoEmail]);
   let userId;
 
   if (userRes.rows.length === 0) {
     const insertUserRes = await query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
+      `INSERT INTO users (name, email, password_hash, role)
+       VALUES ($1, $2, $3, 'patient') RETURNING id`,
       [demoName, demoEmail, passwordHash]
     );
     userId = insertUserRes.rows[0].id;
-    console.log(`[Seed] Created demo user: ${demoEmail} (ID: ${userId})`);
+    console.log(`[Seed] Created demo patient: ${demoEmail} (ID: ${userId})`);
   } else {
     userId = userRes.rows[0].id;
-    await query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, userId]);
-    console.log(`[Seed] Existing demo user found: ${demoEmail} (ID: ${userId})`);
+    await query('UPDATE users SET password_hash = $1, role = $2 WHERE id = $3', [passwordHash, 'patient', userId]);
+    console.log(`[Seed] Existing demo patient found: ${demoEmail} (ID: ${userId})`);
   }
+
+  // 2. Upsert Demo Doctor User
+  const doctorEmail = 'doctor@kenpath.com';
+  const doctorName = 'Dr. Sarah Mitchell, MD';
+
+  let doctorRes = await query('SELECT id FROM users WHERE email = $1', [doctorEmail]);
+  let doctorId;
+
+  if (doctorRes.rows.length === 0) {
+    const insertDoctorRes = await query(
+      `INSERT INTO users (name, email, password_hash, role)
+       VALUES ($1, $2, $3, 'doctor') RETURNING id`,
+      [doctorName, doctorEmail, passwordHash]
+    );
+    doctorId = insertDoctorRes.rows[0].id;
+    console.log(`[Seed] Created demo doctor: ${doctorEmail} (ID: ${doctorId})`);
+  } else {
+    doctorId = doctorRes.rows[0].id;
+    await query('UPDATE users SET password_hash = $1, role = $2 WHERE id = $3', [passwordHash, 'doctor', doctorId]);
+    console.log(`[Seed] Existing demo doctor found: ${doctorEmail} (ID: ${doctorId})`);
+  }
+
+  // 3. Link Patient to Doctor
+  await query(
+    `INSERT INTO doctor_patients (doctor_id, patient_id)
+     VALUES ($1, $2)
+     ON CONFLICT (doctor_id, patient_id) DO NOTHING`,
+    [doctorId, userId]
+  );
+  console.log(`[Seed] Assigned patient ID ${userId} to doctor ID ${doctorId}`);
 
   // Clear previous readings for this demo user for clean idempotency
   await query('DELETE FROM readings WHERE user_id = $1', [userId]);
@@ -104,11 +136,11 @@ async function seedDatabase() {
   console.log('========================================================');
   console.log('  Database seeding completed successfully!');
   console.log('  Demo credentials:');
-  console.log(`  Email:    ${demoEmail}`);
-  console.log(`  Password: ${demoPassword}`);
+  console.log(`  Patient:  ${demoEmail} / ${demoPassword}`);
+  console.log(`  Doctor:   ${doctorEmail} / ${demoPassword}`);
   console.log(`  Total sample readings inserted: ${readingsToInsert.length}`);
   console.log('========================================================');
-  return { userId, totalReadings: readingsToInsert.length };
+  return { userId, doctorId, totalReadings: readingsToInsert.length };
 }
 
 if (require.main === module) {

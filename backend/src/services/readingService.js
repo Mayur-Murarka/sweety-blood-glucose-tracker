@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { invalidateUserReports } = require('../config/redis');
 const {
   validateReadingInput,
   getDuplicateSlotMessage,
@@ -48,6 +49,9 @@ async function createReading({ userId, date, slot, value }) {
      RETURNING id, user_id, TO_CHAR(reading_date, 'YYYY-MM-DD') AS reading_date, slot, glucose_value, created_at, updated_at`,
     [userId, cleanData.date, cleanData.slot, cleanData.value]
   );
+
+  // Invalidate Redis reports cache on data change
+  await invalidateUserReports(userId);
 
   return insertRes.rows[0];
 }
@@ -189,6 +193,9 @@ async function updateReading({ userId, id, date, slot, value }) {
     [cleanData.date, cleanData.slot, cleanData.value, id, userId]
   );
 
+  // Invalidate Redis reports cache on update
+  await invalidateUserReports(userId);
+
   return updateRes.rows[0];
 }
 
@@ -203,6 +210,9 @@ async function deleteReading({ userId, id }) {
     'DELETE FROM readings WHERE id = $1 AND user_id = $2',
     [id, userId]
   );
+
+  // Invalidate Redis reports cache on delete
+  await invalidateUserReports(userId);
 
   return { message: 'Reading deleted successfully.' };
 }

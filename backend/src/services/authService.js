@@ -5,7 +5,7 @@ const env = require('../config/env');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-async function register({ name, email, password }) {
+async function register({ name, email, password, role = 'patient' }) {
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
     const error = new Error('Please enter your name.');
     error.status = 400;
@@ -24,6 +24,8 @@ async function register({ name, email, password }) {
     throw error;
   }
 
+  const validRoles = ['patient', 'doctor'];
+  const userRole = validRoles.includes(role) ? role : 'patient';
   const normalizedEmail = email.trim().toLowerCase();
 
   // Check if email already exists
@@ -44,15 +46,15 @@ async function register({ name, email, password }) {
 
   // Insert user
   const insertRes = await db.query(
-    'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
-    [name.trim(), normalizedEmail, passwordHash]
+    'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role, created_at',
+    [name.trim(), normalizedEmail, passwordHash, userRole]
   );
 
   const user = insertRes.rows[0];
 
-  // Generate JWT token
+  // Generate JWT token with role
   const token = jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
+    { id: user.id, email: user.email, name: user.name, role: user.role },
     env.JWT_SECRET,
     { expiresIn: env.JWT_EXPIRES_IN }
   );
@@ -63,6 +65,7 @@ async function register({ name, email, password }) {
       id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role,
     },
   };
 }
@@ -77,7 +80,7 @@ async function login({ email, password }) {
   const normalizedEmail = email.trim().toLowerCase();
 
   const userRes = await db.query(
-    'SELECT id, name, email, password_hash FROM users WHERE email = $1',
+    'SELECT id, name, email, role, password_hash FROM users WHERE email = $1',
     [normalizedEmail]
   );
 
@@ -97,7 +100,7 @@ async function login({ email, password }) {
   }
 
   const token = jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
+    { id: user.id, email: user.email, name: user.name, role: user.role || 'patient' },
     env.JWT_SECRET,
     { expiresIn: env.JWT_EXPIRES_IN }
   );
@@ -108,6 +111,7 @@ async function login({ email, password }) {
       id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role || 'patient',
     },
   };
 }

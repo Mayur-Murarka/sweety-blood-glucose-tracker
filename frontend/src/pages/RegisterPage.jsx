@@ -9,6 +9,7 @@ export default function RegisterPage({ onNavigateLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('patient'); // 'patient' | 'doctor'
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,7 +30,7 @@ export default function RegisterPage({ onNavigateLogin }) {
     setIsSubmitting(true);
 
     try {
-      await register(name, email, password);
+      await register(name, email, password, role);
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -60,6 +61,37 @@ export default function RegisterPage({ onNavigateLogin }) {
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Account Type Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Account Type
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRole('patient')}
+                  className={`py-2 px-3 text-xs font-semibold rounded-xl border transition-all text-center ${
+                    role === 'patient'
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-800 ring-2 ring-emerald-500/20'
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Patient
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('doctor')}
+                  className={`py-2 px-3 text-xs font-semibold rounded-xl border transition-all text-center ${
+                    role === 'doctor'
+                      ? 'bg-teal-50 border-teal-500 text-teal-800 ring-2 ring-teal-500/20'
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Doctor / Clinician
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Full Name

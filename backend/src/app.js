@@ -3,6 +3,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const readingRoutes = require('./routes/readingRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const doctorRoutes = require('./routes/doctorRoutes');
+const reminderRoutes = require('./routes/reminderRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -20,6 +22,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/readings', readingRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/doctor', doctorRoutes);
+app.use('/api/reminders', reminderRoutes);
 
 // 404 handler
 app.use((req, res) => {

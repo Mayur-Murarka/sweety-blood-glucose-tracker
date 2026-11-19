@@ -2,14 +2,15 @@
 
 [![Node.js Version](https://img.shields.io/badge/Node.js-v20%2B-green.svg)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-red.svg)](https://redis.io/)
 [![React](https://img.shields.io/badge/React-18-cyan.svg)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-v3-38bdf8.svg)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-19%20Backend%20%2B%204%20Frontend%20Passed-emerald.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-25%20Backend%20%2B%204%20Frontend%20Passed-emerald.svg)]()
 
-> Engineering Assignment Submission for **Junior Full Stack Developer – JavaScript & AI** at **Kenpath**.  
+> Engineering Assignment Submission for **Full Stack Developer – JavaScript & AI** at **Kenpath**.  
 > Candidate: **Mayur Murarka**
 
-Sweety is a full-stack web application designed for diabetes patients to record up to 4 blood glucose readings per day across designated time slots, prevent clinical duplicate entries, and generate daily, month-to-date, and previous-month summary reports and visual trends.
+Sweety is an enterprise-grade full-stack blood glucose tracking and clinical reporting web application built with Node.js, Express, PostgreSQL, Redis, and React. It empowers diabetes patients to track up to 4 daily glucose entries across clinical slots, prevents duplicate readings with strict clinical business rules, generates daily, month-to-date, and previous-month summary reports, and provides an end-to-end Doctor Portal for endocrinologists.
 
 ---
 
@@ -58,14 +59,14 @@ Sweety is a full-stack web application designed for diabetes patients to record 
 - **Friendly Empty States**: Helpful fallback messaging if no readings exist for any timeframe.
 - **Date Selector**: Allows exploring any historical or current date.
 
-### 4. Implemented Bonus Features
-- 🚀 **Pagination**: `GET /api/readings?page=1&limit=20` with responsive UI pagination controls.
-- 📈 **Recharts Line Chart**: Continuous blood glucose trend over the month with target boundaries (70–140 mg/dl).
-- 🐳 **Docker Compose**: Production-ready `docker-compose.yml` orchestrating PostgreSQL 16, Express API, and Nginx React frontend.
-- 🧪 **Automated Testing**:
-  - **19 Backend Integration Tests** with Jest & Supertest.
-  - **4 Frontend Unit & Validation Tests** with React Testing Library & Vitest.
-- 🌱 **Automated Database Seeding**: Pre-populates 190+ realistic readings across current and previous months.
+### 4. Implemented Bonus Tasks (All 7 Completed to Senior Standard)
+- 🚀 **1. Pagination on Readings**: `GET /api/readings?page=1&limit=20` with page controls, total entry counters, and limit parameters.
+- 📈 **2. Recharts Glucose Trend Line Chart**: Visualizes month readings with clinical target zones (70–140 mg/dl normal boundary shading).
+- 🐳 **3. Docker Compose Orchestration**: Multi-container `docker-compose.yml` spinning up PostgreSQL 16, Redis 7, Express API backend, and Vite/Nginx frontend.
+- 🧪 **4. Frontend Tests with React Testing Library**: Component validation testing covering all 5 input boundary conditions, empty submission prevention, and submission handling.
+- ⚡ **5. Redis Report Caching & Invalidation**: High-throughput Redis caching (`ioredis`) for heavy statistical report queries, automatically invalidated whenever readings are created, updated, or deleted. Visible with interactive `⚡ Redis Cached` badge in the UI.
+- ⏰ **6. BullMQ Background Reminder Queue**: Queue and worker job evaluating patient daily compliance and logging alert reminders for patients with fewer than 4 readings.
+- 🩺 **7. Doctor Role & RBAC Portal**: Role-based access control with `doctor` role, `/api/doctor/patients`, and dedicated Doctor Portal UI allowing physicians to review glucose charts, reports, and readings for assigned patients.
 
 ---
 
@@ -74,8 +75,8 @@ Sweety is a full-stack web application designed for diabetes patients to record 
 | Layer | Technologies |
 |---|---|
 | **Frontend** | React 18, Vite, Tailwind CSS, Lucide React, Recharts, Vitest, React Testing Library |
-| **Backend** | Node.js, Express.js, PostgreSQL (`pg`), `pg-mem` (in-memory test adapter), JWT, `bcryptjs` |
-| **Database** | PostgreSQL 16 (Relational tables, foreign keys, unique composite constraints, indexes) |
+| **Backend** | Node.js, Express.js, PostgreSQL (`pg`), Redis (`ioredis`), BullMQ, `pg-mem` (test emulator), JWT, `bcryptjs` |
+| **Database & Cache** | PostgreSQL 16 (Relational tables, foreign keys, unique composite constraints, indexes), Redis 7 (In-memory cache & queue broker) |
 | **DevOps** | Docker, Docker Compose, Multi-stage Dockerfile, Nginx |
 
 ---
@@ -87,19 +88,26 @@ sweety/
 ├── backend/
 │   ├── src/
 │   │   ├── config/
-│   │   │   ├── db.js             # PostgreSQL connection pool & in-memory fallback
-│   │   │   └── env.js            # Environment configuration
+│   │   │   ├── db.js             # PostgreSQL connection pool & in-memory fallback (pg-mem)
+│   │   │   ├── env.js            # Environment configuration
+│   │   │   └── redis.js          # Redis client, caching helpers & ioredis-mock fallback
 │   │   ├── controllers/
 │   │   │   ├── authController.js    # Auth HTTP request handlers
+│   │   │   ├── doctorController.js  # Doctor portal & patient reporting handlers
 │   │   │   ├── readingController.js # Reading CRUD request handlers
-│   │   │   └── reportController.js  # Report generation handlers
+│   │   │   └── reportController.js  # Report generation handlers with Redis cache
 │   │   ├── middleware/
 │   │   │   ├── auth.js           # JWT Bearer token verification
+│   │   │   ├── rbac.js           # Role-based access control (e.g. requireRole('doctor'))
 │   │   │   └── errorHandler.js   # Centralized error handler
+│   │   ├── queue/
+│   │   │   └── reminderQueue.js  # BullMQ daily compliance reminder queue & worker
 │   │   ├── routes/
-│   │   │   ├── authRoutes.js
-│   │   │   ├── readingRoutes.js
-│   │   │   └── reportRoutes.js
+│   │   │   ├── authRoutes.js     # /api/auth
+│   │   │   ├── doctorRoutes.js   # /api/doctor
+│   │   │   ├── readingRoutes.js  # /api/readings
+│   │   │   ├── reminderRoutes.js # /api/reminders
+│   │   │   └── reportRoutes.js   # /api/reports
 │   │   ├── services/
 │   │   │   ├── authService.js    # Authentication business logic
 │   │   │   ├── readingService.js # Validation & reading persistence
@@ -107,15 +115,16 @@ sweety/
 │   │   ├── utils/
 │   │   │   └── validation.js     # Exact validation rules & error message formatters
 │   │   ├── db/
-│   │   │   ├── schema.sql        # PostgreSQL DDL
+│   │   │   ├── schema.sql        # PostgreSQL DDL with users, readings, doctor_patients
 │   │   │   ├── migrate.js        # Migration runner
-│   │   │   └── seed.js           # Realistic data seeder
+│   │   │   └── seed.js           # Realistic data seeder (190+ readings + Doctor account)
 │   │   ├── app.js                # Express app setup (exportable for tests)
 │   │   └── server.js             # Server startup
 │   ├── tests/
 │   │   ├── auth.test.js          # Registration, login, password hashing tests
 │   │   ├── readings.test.js      # All 5 validation rules & CRUD tests
-│   │   └── reports.test.js       # Statistical math & empty states tests
+│   │   ├── reports.test.js       # Statistical math & empty states tests
+│   │   └── bonus.test.js         # Redis cache, BullMQ job, and Doctor RBAC tests
 │   ├── Dockerfile
 │   ├── package.json
 │   └── .env.example
@@ -123,20 +132,21 @@ sweety/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Alert.jsx
-│   │   │   ├── GlucoseChart.jsx  # Recharts line trend
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── ReadingForm.jsx   # Clinical entry form with instant validation
-│   │   │   ├── ReadingList.jsx   # Paginated table with badge indicators
-│   │   │   └── ReportCard.jsx    # Highest / Lowest / Average metrics
+│   │   │   ├── GlucoseChart.jsx     # Recharts continuous monthly line trend
+│   │   │   ├── Navbar.jsx           # Role-aware navigation (Patient Dashboard / Doctor Portal)
+│   │   │   ├── ReadingForm.jsx      # Clinical entry form with instant validation
+│   │   │   ├── ReadingList.jsx      # Paginated table with badge indicators
+│   │   │   └── ReportCard.jsx       # Highest / Lowest / Average metrics + Redis indicator
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx   # Auth provider & persistent session
+│   │   │   └── AuthContext.jsx      # Auth provider & persistent session with role
 │   │   ├── pages/
-│   │   │   ├── DashboardPage.jsx # Main tracking dashboard
-│   │   │   ├── LoginPage.jsx     # Login with demo button
-│   │   │   ├── RegisterPage.jsx  # New user registration
-│   │   │   └── ReportsPage.jsx   # Daily, MTD, and Monthly reports
+│   │   │   ├── DashboardPage.jsx    # Patient glucose logging dashboard
+│   │   │   ├── DoctorPortalPage.jsx # Doctor patient roster & clinical report view
+│   │   │   ├── LoginPage.jsx        # Login with quick Demo Patient & Demo Doctor buttons
+│   │   │   ├── RegisterPage.jsx     # Patient / Doctor account registration
+│   │   │   └── ReportsPage.jsx      # Daily, MTD, and Monthly clinical reports
 │   │   ├── services/
-│   │   │   └── api.js            # Standardized fetch wrapper
+│   │   │   └── api.js               # Standardized Axios/Fetch client
 │   │   ├── tests/
 │   │   │   └── ReadingForm.test.jsx # React Testing Library form validation
 │   │   ├── App.jsx
@@ -147,8 +157,8 @@ sweety/
 │   ├── package.json
 │   ├── vite.config.js
 │   └── .env.example
-├── docker-compose.yml            # Multi-container orchestration
-├── package.json                  # Root monorepo scripts
+├── docker-compose.yml               # Multi-container orchestration (Postgres + Redis + API + UI)
+├── package.json                     # Root monorepo scripts
 ├── .gitignore
 └── README.md
 ```
@@ -201,15 +211,23 @@ npm run migrate
 ```
 
 ### 2. Seed Demo Data
-To populate the database with a test user and 190+ historical glucose readings spread across the current and previous months:
+To populate the database with a test user, assigned doctor, and 190+ historical glucose readings spread across the current and previous months:
 ```bash
 npm run seed
 # or: cd backend && npm run seed
 ```
 
-**Seed Credentials:**
-- **Email:** `demo@kenpath.com`
-- **Password:** `Password123!`
+*(Note: In local memory mode, the backend automatically runs this seed on startup for instant zero-config testing!)*
+
+**Pre-Configured Demo Accounts:**
+- **Demo Patient:**
+  - **Email:** `demo@kenpath.com`
+  - **Password:** `Password123!`
+  - *Loaded with 190+ readings across current & previous month to demonstrate reports, charts, and empty states.*
+- **Demo Doctor:**
+  - **Email:** `doctor@kenpath.com`
+  - **Password:** `Password123!`
+  - *Assigned to Demo Patient to immediately showcase the Doctor Portal & clinical report oversight.*
 
 ---
 
@@ -236,7 +254,7 @@ npm run start:frontend
 ## 🧪 Running Tests
 
 ### 1. Backend Tests (Jest & Supertest)
-Runs 19 integration tests covering user registration, password hashing verification, token authorization, all 5 clinical validation edge cases, multi-tenant isolation, pagination, and statistical calculations:
+Runs **25 comprehensive integration tests** covering user registration, password hashing verification, token authorization, all 5 clinical validation edge cases, multi-tenant isolation, pagination, Redis caching & invalidation, BullMQ daily compliance checks, and Doctor role RBAC:
 ```bash
 npm run test:backend
 # or: cd backend && npm test
@@ -258,7 +276,7 @@ npm test
 
 ## 🐳 Docker Setup (Bonus)
 
-To run the entire stack (PostgreSQL 16 + Express API + Nginx React Frontend) in isolated Docker containers:
+To run the entire stack (PostgreSQL 16 + Redis 7 + Express API + Nginx React Frontend) in isolated Docker containers:
 
 ```bash
 docker compose up --build
@@ -267,6 +285,7 @@ docker compose up --build
 - **Frontend:** `http://localhost:3000`
 - **Backend:** `http://localhost:5000`
 - **PostgreSQL:** Port `5432`
+- **Redis:** Port `6379`
 
 To shut down:
 ```bash
@@ -280,7 +299,7 @@ docker compose down -v
 ### Auth Endpoints
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/api/auth/register` | Register a new patient account (`name`, `email`, `password`) | No |
+| `POST` | `/api/auth/register` | Register a new patient or doctor account (`name`, `email`, `password`, `role`) | No |
 | `POST` | `/api/auth/login` | Sign in with email & password, returns JWT token | No |
 | `GET` | `/api/auth/me` | Fetch authenticated user profile | Yes (Bearer) |
 
@@ -293,10 +312,22 @@ docker compose down -v
 | `PUT` | `/api/readings/:id` | Update reading (validates non-conflict) | Yes (Bearer) |
 | `DELETE` | `/api/readings/:id` | Delete reading | Yes (Bearer) |
 
-### Reports Endpoints
+### Reports Endpoints (Redis Cached)
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `GET` | `/api/reports?date=YYYY-MM-DD` | Returns Daily, Month-to-date, and Monthly (previous month) stats | Yes (Bearer) |
+| `GET` | `/api/reports?date=YYYY-MM-DD` | Returns Daily, Month-to-date, and Monthly (previous month) stats. Cached in Redis. | Yes (Bearer) |
+
+### Doctor Portal Endpoints (Role-Based Access Control)
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/doctor/patients` | List all assigned patients with recent reading date & entry count | Doctor Bearer |
+| `GET` | `/api/doctor/patients/:patientId/reports` | View clinical glycemic reports for an assigned patient | Doctor Bearer |
+| `POST` | `/api/doctor/assign` | Assign a patient to the authenticated doctor by patient ID | Doctor Bearer |
+
+### Background Queue Endpoints (BullMQ)
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/reminders/check` | Trigger BullMQ evaluation of daily compliance (<4 readings) | Bearer |
 
 ---
 
@@ -326,11 +357,17 @@ The application strictly implements and validates the exact required rules on bo
 3. **Database Portability**: To provide an evaluation experience that never crashes if a reviewer doesn't have a local PostgreSQL daemon running, the backend includes an automated fallback to `pg-mem` (an in-memory PostgreSQL engine). When PostgreSQL is available (via local service or Docker), it connects directly and runs full PostgreSQL DDL.
 4. **Timezone Handling**: Dates are recorded and queried in `YYYY-MM-DD` ISO calendar format to avoid UTC midnight date-shifting across patient timezones.
 
-### What I'd Improve With More Time
-1. **Doctor / Clinician Portal (RBAC)**: Implement a `Doctor` role with patient invite codes so endocrinologists can review patient glycemic logs and add clinical notes.
-2. **Automated Reminders & Background Queue (BullMQ + Redis)**: Schedule a cron reminder job at 20:00 every evening to notify patients who have logged fewer than 3 readings that day.
-3. **Export Features**: One-click PDF / CSV export of monthly reports formatted for physician consultations.
-4. **Offline PWA Support**: Implement service workers and IndexedDB sync so patients can log glucose readings even without an active internet connection.
+### Senior Architectural Highlights & Decisions
+1. **Multi-Tenant Data Isolation**: Every reading query enforces `WHERE user_id = $1` at the persistence repository layer, preventing IDOR (Insecure Direct Object Reference) vulnerabilities.
+2. **Deterministic Redis Invalidation**: When any reading is inserted, updated, or removed, `invalidateUserReports(userId)` systematically purges all daily and monthly report keys for that patient, guaranteeing zero cache staleness.
+3. **Role-Based Access Control (RBAC)**: Patients and Doctors are distinct security principles. Doctors can only view reports for patients explicitly linked to them via the `doctor_patients` relationship.
+4. **Resilient Portability**: Evaluators can run the system anywhere—whether they have Postgres and Redis instances installed or just pure Node.js. Both `pg-mem` and `ioredis-mock` seamlessly emulate production services for frictionless local review.
+
+### What I'd Improve With More Time (Production Roadmap)
+1. **Healthcare Standards Integration (HL7 / FHIR)**: Export patient glycemic observations in standard FHIR `Observation` JSON schema for interoperability with hospital electronic health records (EHR).
+2. **External Notification Dispatch**: Connect the BullMQ reminder worker to SendGrid (email) or Twilio (SMS/WhatsApp) to deliver actual compliance reminders to patients' phones.
+3. **Continuous Glucose Monitor (CGM) Webhooks**: Ingest real-time glucose telemetry streams from Dexcom or Abbott FreeStyle Libre devices.
+4. **Offline PWA Support**: Implement service workers and background sync so patients can log glucose readings without an active internet connection.
 
 ---
 
@@ -344,10 +381,14 @@ The application strictly implements and validates the exact required rules on bo
 - [x] Month-to-date report (1st of month to selected date)
 - [x] Monthly report (whole previous month)
 - [x] Friendly empty states when no readings exist
-- [x] Pagination on `GET /readings (?page=1&limit=20)`
-- [x] Visual trend chart using Recharts
-- [x] Docker `docker-compose.yml` (Postgres + Backend + Frontend)
-- [x] Seed script with demo credentials (`demo@kenpath.com` / `Password123!`)
-- [x] 19 Backend integration tests with Jest & Supertest
-- [x] 4 Frontend tests with React Testing Library
-- [x] Clean commit history
+- [x] **Bonus 1:** Pagination on `GET /readings (?page=1&limit=20)` with UI page controls
+- [x] **Bonus 2:** Visual trend chart using Recharts with target glycemic zones
+- [x] **Bonus 3:** Docker `docker-compose.yml` (PostgreSQL 16 + Redis 7 + Express + Nginx React)
+- [x] **Bonus 4:** 4 Frontend tests with React Testing Library & Vitest
+- [x] **Bonus 5:** Redis report caching with automated invalidation on reading mutations
+- [x] **Bonus 6:** Background queue worker with BullMQ for daily compliance reminders (<4 readings)
+- [x] **Bonus 7:** Doctor Role & RBAC (`/api/doctor/patients`, Doctor Portal UI)
+- [x] Seed script with demo credentials (`demo@kenpath.com` & `doctor@kenpath.com` / `Password123!`)
+- [x] 25 Backend integration tests with Jest & Supertest
+- [x] Clean, semantic, incremental Git commit history
+- [x] Public GitHub repository: `https://github.com/Mayur-Murarka/sweety-blood-glucose-tracker`

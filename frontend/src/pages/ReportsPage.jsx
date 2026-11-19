@@ -91,7 +91,7 @@ export default function ReportsPage() {
             <ReportCard
               title="Daily Report"
               rangeLabel={reportData.daily.label}
-              stats={reportData.daily}
+              stats={{ ...reportData.daily, fromCache: reportData.fromCache }}
               isDaily={true}
             />
 
@@ -99,14 +99,14 @@ export default function ReportsPage() {
             <ReportCard
               title="Month-to-Date"
               rangeLabel={reportData.monthToDate.label}
-              stats={reportData.monthToDate}
+              stats={{ ...reportData.monthToDate, fromCache: reportData.fromCache }}
             />
 
             {/* 3. Monthly Report (Whole Previous Month) */}
             <ReportCard
               title={`Monthly (${reportData.monthly.monthName || 'Previous Month'})`}
               rangeLabel={reportData.monthly.label}
-              stats={reportData.monthly}
+              stats={{ ...reportData.monthly, fromCache: reportData.fromCache }}
             />
           </div>
 

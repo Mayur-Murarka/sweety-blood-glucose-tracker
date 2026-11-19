@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import DashboardPage from './pages/DashboardPage';
 import ReportsPage from './pages/ReportsPage';
+import DoctorPortalPage from './pages/DoctorPortalPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import { HeartPulse } from 'lucide-react';
@@ -11,6 +12,15 @@ function AppContent() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [authView, setAuthView] = useState('login'); // 'login' | 'register'
+
+  // If user is a doctor, default to the doctor portal tab
+  useEffect(() => {
+    if (user?.role === 'doctor') {
+      setActiveTab('doctor');
+    } else {
+      setActiveTab('dashboard');
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -37,11 +47,13 @@ function AppContent() {
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'dashboard' ? <DashboardPage /> : <ReportsPage />}
+        {activeTab === 'doctor' && <DoctorPortalPage />}
+        {activeTab === 'dashboard' && <DashboardPage />}
+        {activeTab === 'reports' && <ReportsPage />}
       </main>
 
       <footer className="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-        Sweety Blood Glucose Tracker • Built for Kenpath Engineering Assignment • Node.js + Express + PostgreSQL + React
+        Sweety Blood Glucose Tracker • Built for Kenpath Engineering Assignment • Node.js + Express + PostgreSQL + React + Redis + BullMQ
       </footer>
     </div>
   );

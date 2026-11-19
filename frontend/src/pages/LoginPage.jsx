@@ -38,6 +38,20 @@ export default function LoginPage({ onNavigateRegister }) {
     }
   };
 
+  const handleDoctorLogin = async () => {
+    setEmail('doctor@kenpath.com');
+    setPassword('Password123!');
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await login('doctor@kenpath.com', 'Password123!');
+    } catch (err) {
+      setError(err.message || 'Doctor login failed. Make sure the backend seed script has run.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-50">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -109,8 +123,8 @@ export default function LoginPage({ onNavigateRegister }) {
             </button>
           </form>
 
-          {/* Quick Demo Access Button */}
-          <div className="mt-6 pt-6 border-t border-slate-100">
+          {/* Quick Demo Access Buttons */}
+          <div className="mt-6 pt-6 border-t border-slate-100 space-y-2">
             <button
               type="button"
               onClick={handleDemoLogin}
@@ -118,10 +132,20 @@ export default function LoginPage({ onNavigateRegister }) {
               className="w-full flex items-center justify-center space-x-2 py-2 px-4 border border-emerald-300 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition-colors"
             >
               <Sparkles className="w-4 h-4 text-emerald-600" />
-              <span>Click for One-Click Demo Evaluator Login</span>
+              <span>One-Click Demo Patient Login</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDoctorLogin}
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center space-x-2 py-2 px-4 border border-teal-300 bg-teal-50/70 hover:bg-teal-100 text-teal-800 text-xs font-semibold rounded-xl transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4 text-teal-600" />
+              <span>One-Click Demo Doctor Login (Dr. Sarah Mitchell, MD)</span>
             </button>
             <p className="text-[11px] text-center text-slate-400 mt-1.5">
-              Prefilled with demo@kenpath.com & sample historical readings
+              Pre-seeded with patient & doctor credentials for evaluator review
             </p>
           </div>
 
