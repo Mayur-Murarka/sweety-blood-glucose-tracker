@@ -371,6 +371,18 @@ The application strictly implements and validates the exact required rules on bo
 
 ---
 
+## 🎥 Media & Video Walkthrough
+
+- **Recorded Video Walkthrough (2m 18s):** [`demo_walkthrough.mp4`](demo_walkthrough.mp4) (Demonstrates Login, Patient Dashboard, Clinical Boundary Rejections, Valid Submission, Reports, Recharts Trend Line, Redis Caching, and Doctor Portal with BullMQ queue execution).
+- **Screenshots Gallery:** Located in [`screenshots/`](screenshots/):
+  - `01_login_page.png`: Welcome & Authentication screen with quick Demo buttons
+  - `02_patient_dashboard.png`: Patient dashboard with 190+ readings, ADA target cards, and pagination
+  - `03_validation_error.png`: Live boundary error alert (*"Value must be between 40 and 600 mg/dl."*)
+  - `04_reports_and_charts.png`: Daily, MTD, and Monthly reports with Recharts trend line and `⚡ Redis` cache pill
+  - `05_doctor_portal.png`: Doctor Portal displaying assigned patient roster and clinical oversight
+
+---
+
 ## 👨‍💻 Submission & Verification Checklist
 
 - [x] Sign up and login with bcrypt hashed passwords
@@ -390,5 +402,6 @@ The application strictly implements and validates the exact required rules on bo
 - [x] **Bonus 7:** Doctor Role & RBAC (`/api/doctor/patients`, Doctor Portal UI)
 - [x] Seed script with demo credentials (`demo@kenpath.com` & `doctor@kenpath.com` / `Password123!`)
 - [x] 25 Backend integration tests with Jest & Supertest
+- [x] Automated video demo recording (`demo_walkthrough.mp4`) & 5 high-res screenshots
 - [x] Clean, semantic, incremental Git commit history
 - [x] Public GitHub repository: `https://github.com/Mayur-Murarka/sweety-blood-glucose-tracker`
